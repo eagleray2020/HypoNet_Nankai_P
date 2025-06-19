@@ -6,7 +6,8 @@ def sexa2deci(hh=0, mm=0, ss=0):
 
 class EGM2008():
     def __init__(self, fn):
-        self.egm=np.load(fn)
+        #self.egm=np.load(fn)
+        self.egm=np.load(fn)["data"]
         self.lonmin=self.egm[0,0,1]
         self.latmin=self.egm[0,0,0]
         self.d=self.egm[0,1,1]-self.egm[0,0,1]

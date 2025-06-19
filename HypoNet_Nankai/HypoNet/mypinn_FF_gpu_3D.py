@@ -1,24 +1,11 @@
 import numpy as np
-import time
-import random
 import torch
 from torch import Tensor
 from torch.utils.data import TensorDataset
 from torch.utils.data import DataLoader
 import sys
-import scipy.io 
-import copy
-import scipy.sparse.linalg
-#import torch_optimizer as optim
 import math
-import matplotlib.pyplot as plt
-import time 
-import subprocess
 
-#seed = 0
-#random.seed(seed)
-#np.random.seed(seed)
-#torch.manual_seed(seed)
 def gauss(x):
     return torch.exp(-x**2)
 
@@ -213,8 +200,6 @@ class MyPINN_t(torch.nn.Module):
 
         return x
             
-#    def pred_t(self, x):
-#        x = self.pred_arctanhveff(x)
     def pred_t(self, x, xs):
         ndata = len(x)
         xj = torch.empty((ndata,4))
@@ -227,16 +212,10 @@ class MyPINN_t(torch.nn.Module):
         xjr[:, 1] = xs[:, 1]
         xjr[:, 2] = x[:, 0]
         xjr[:, 3] = x[:, 1]
-        x = 0.5*self.pred_arctanhveff(xj)+0.5*self.pred_arctanhveff(xjr)
-        #test 
-#        x = x*2.-1.
-#        x = x-0.5
+        x = 0.5*self.pred_arctanhveff(xj)+0.5*self.pred_arctanhveff(xjr)        
         x = torch.tanh(x)
         x = (x+1.)/2.*(self.vtotmax*1.1-self.vtotmin*0.9)+self.vtotmin*0.9
-#        x = (x+1.)/2.*(self.vtotmax-self.vtotmin)+self.vtotmin
         x = 1./x
-#        x = torch.tanh(x)
-#        x = (x+1.)/2.*(self.taumax-self.taumin)+self.taumin
         return x
  
     def pred_T(self, x, xs):
@@ -248,94 +227,6 @@ class MyPINN_t(torch.nn.Module):
         
     def num_of_parameters(self):
         return sum(p.numel() for p in self.parameters())
-    
-    def forward(self, xpde, xobs, xsource, xs_pde, xs_obs, xs_source):
-        p = self.forward_misfit(xpde, xobs, xsource, xs_pde, xs_obs, xs_source)
-        q = self.prior()
-        return torch.cat((p, q))
- 
-    def prior(self):
-        if self.hp_prior < 0.:
-            return  torch.zeros(self.num_of_parameters())
-        else:
-            return torch.cat([param.view(-1) for param in self.parameters()])/(2**0.5*self.hp_prior)
-
-    def forward_misfit(self, xpde, xobs, xsource, xs_pde, xs_obs, xs_source):
-        return  torch.cat((torch.cat((self.forward_pde(xpde, xs_pde), self.forward_obs(xobs, xs_obs)), 0),\
-                           self.forward_source(xsource, xs_source)), 0)
-
-    #def forward_eik(self, xpde, xsource, xs_pde, xs_source, v):
-    #    return  torch.cat((self.forward_pde(xpde, xs_pde, v), self.forward_source(xsource, xs_source)), 0)
-
-    def forward_pde(self, x, xs, v):
-        ndata = len(x)
-        xj = torch.empty((ndata,4))
-        xj[:, 0] = x[:, 0]
-        xj[:, 1] = x[:, 1]
-        xj[:, 2] = xs[:, 0]
-        xj[:, 3] = xs[:, 1]
-        tau = self.pred_t(xj)
-           
-        t0 = ((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5
-         
-        tau_x = torch.autograd.grad(tau[:, 0], x, torch.ones(ndata), retain_graph=True, create_graph=True)
-        t0_x  = torch.autograd.grad(t0, x, torch.ones(ndata), retain_graph=True, create_graph=True)   
-        
-        #self.v_pred = (self.pred_v(x))[:, 0]
-        
-        p = (t0**2*(tau_x[0][:, 0]**2+tau_x[0][:, 1]**2)+tau[:, 0]**2*(t0_x[0][:, 0]**2+t0_x[0][:, 1]**2)+ \
-          + 2.*t0*tau[:, 0]*(tau_x[0][:, 0]*t0_x[0][:, 0]+tau_x[0][:, 1]*t0_x[0][:, 1]))**(-0.5)-v
-#        p = (t0**2*(tau_x[0][:, 0]**2+tau_x[0][:, 1]**2)+tau[:, 0]**2*(t0_x[0][:, 0]**2+t0_x[0][:, 1]**2)+ \
-#          + 2.*t0*tau[:, 0]*(tau_x[0][:, 0]*t0_x[0][:, 0]+tau_x[0][:, 1]*t0_x[0][:, 1]))**(-1)-v**2
-        p /= (2**0.5*self.hp_pde)
-        
-        #print("p", p)
-        return p
-
-    def forward_pde_nohp(self, x, xs, v):
-        ndata = len(x)
-        tau = self.pred_t(x, xs)
-        t0 = ((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5
-        T = tau[:, 0]*t0
-        T_x = torch.autograd.grad(T.sum(), x, create_graph=True)[0]
-        p = (T_x[:,0]**2+T_x[:,1]**2)**(-0.5)-v
-        p /= (len(v)**0.5)
-        return p
-
-    def forward_pde_nohp_nonormalization(self, x, xs, v):
-        ndata = len(x)
-        tau = self.pred_t(x, xs)
-        t0 = ((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5
-        T = tau[:, 0]*t0
-        T_x = torch.autograd.grad(T.sum(), x, create_graph=True)[0]
-        p = (T_x[:,0]**2+T_x[:,1]**2)**(-0.5)-v
-        return p
-  
-    def forward_source_nohp(self, xs_s, vs):
-        return (1./self.pred_t(xs_s,xs_s)[:, 0]-vs)/(len(vs)**0.5)
-
-
-    def forward_nohp(self, x, xs, xs_s, v, vs):
-        p = self.forward_pde_nohp(x, xs, v)
-        #return p
-        q = self.forward_source_nohp(xs_s, vs)
-        return torch.cat((p, q))
-
-    
-    def forward_obs(self, x, xs):
-        ndata = len(x)
-        xj = torch.empty((ndata,4))
-        xj[:, 0] = x[:, 0]
-        xj[:, 1] = x[:, 1]
-        xj[:, 2] = xs[:, 0]
-        xj[:, 3] = xs[:, 1]
-        t0 = (((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5)
-        tau = self.pred_t(xj)
-        t = tau[:, 0]*t0       
-        t /= (2**0.5*self.hp_obs)
-            
-        return t
-    
  
     def set_num_points(self, ns, nobs):
         self.ns = ns
@@ -411,22 +302,15 @@ class MyPINN_t(torch.nn.Module):
         xslist[:, 0] = xs[0]
         xslist[:, 1] = xs[1]
         tau = self.pred_t(x, xslist)
-        #xpde = x[:, 0:2]
-        #xs = x[:, 2:4]
         t0 = (((x[:, 0]-xs[0])**2+(x[:, 1]-xs[1])**2)**0.5)/(self.pred_v(xs))
-        #print((self.pred_v(xs))[:, 0])
-        #print(t0)
          
         tau_x = torch.autograd.grad(tau[:, 0], x, torch.ones(ndata), retain_graph=True, create_graph=True)
         t0_x  = torch.autograd.grad(t0, x, torch.ones(ndata), retain_graph=True, create_graph=True)   
-        #tau_x = torch.autograd.grad(tau[:, 0], x, torch.ones(ndata), retain_graph=True)
-        #t0_x  = torch.autograd.grad(t0, x, torch.ones(ndata), retain_graph=True)
         
         v = (t0**2*(tau_x[0][:, 0]**2+tau_x[0][:, 1]**2)+tau[:, 0]**2*(t0_x[0][:, 0]**2+t0_x[0][:, 1]**2)+ \
           + 2.*t0*tau[:, 0]*(tau_x[0][:, 0]*t0_x[0][:, 0]+tau_x[0][:, 1]*t0_x[0][:, 1]))**(-0.5)
                 
         v = (v).reshape(len(X), len(X[0, :])).detach()#.numpy().copy()
-        #print("p", p)
         return v
     
 
@@ -476,60 +360,11 @@ class MyPINN_t(torch.nn.Module):
                 v_dcomp.append(v[head:head+leng])
             else:
                 a, b = param.size()
-                #print(a, b)
                 v_dcomp.append(torch.reshape(v[head:head+leng], (a, b)))
             head += leng
             
         return v_dcomp
     
-    def forwardf_misfit(self, v, gT, Tobs):
-        return  torch.cat((self.forwardf_pde(v, gT), self.forwardf_obs(Tobs)), 0)         
-            
-    def forwardf_pde(self, v, gT):
-        p = (gT[:, 0]**2+gT[:, 1]**2)**(-0.5)-v[:]
-        p /= (2**0.5*self.hp_pde)
-        #print("p", p)
-        return p
-    
-    def forwardf_source(self, Ts):
-        return Ts/(2**0.5*self.hp_source)
-    
-    def forwardf_obs(self, Tobs, std_obs):
-        #t = Tobs/(2**0.5*self.hp_obs)
-        t = Tobs/(2**0.5*std_obs)
-        return t 
-            
-    def pred_gT(self, xpde, xs_pde):
-        ndata = len(xpde)
-        tau = self.pred_t(xpde, xs_pde)
-        t0 = ((xpde[:, 0]-xs_pde[:, 0])**2+(xpde[:, 1]-xs_pde[:, 1])**2)**0.5
-        T = tau[:, 0]*t0
-        gT = torch.autograd.grad(T.sum(), xpde, create_graph=True)[0]
-        
-        return gT
-
-    def pred_Tobs(self, xobs, xs_obs):
-        ndata = len(xobs)
-        tau = self.pred_t(xobs, xs_obs)
-        t0 = ((xobs[:, 0]-xs_obs[:, 0])**2+(xobs[:, 1]-xs_obs[:, 1])**2)**0.5
-        Tobs = tau[:, 0]*t0
-   
-        return Tobs
-
-    def calc_rms(self, x, xs, y):
-        ndata = len(x)
-        t0 = (((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5)
-        tau = self.pred_t(x, xs)
-        t = tau[:, 0]*t0       
-        
-        return self.loss_function_mean(y.ravel(), t.ravel())**0.5
-
-    def loss_obs(self, x_obs, xs_obs, y_obs, std_obs):
-        Tobs = self.pred_Tobs(x_obs, xs_obs)
-        y_obs_scaled = (y_obs.reshape(len(y_obs))/(2**0.5*(std_obs))).clone().detach()
-        outp = self.forwardf_obs(Tobs, std_obs)
-        return self.loss_function(outp, y_obs_scaled)
-
     def initialization_kaiming(self):
         for m in self.modules():
             if isinstance(m, torch.nn.Linear):
@@ -547,7 +382,6 @@ class MyPINN_t(torch.nn.Module):
     def initialization_FFswish(self, FFsigma):
         for m in self.modules():
             if isinstance(m, torch.nn.Linear):
-#                torch.nn.init.xavier_normal_(m.weight)
                 torch.nn.init.kaiming_normal_(m.weight)
                 if m.bias is not None:
                     torch.nn.init.constant_(m.bias, 0.)
@@ -673,7 +507,6 @@ class MyPINN3D_t(MyPINN_t):
                 x_out = x
             else:
                 x_out = torch.cat((x_out, x), axis=1)
-#                x_out *= x
 
 
             if i == self.nmff-1:
@@ -700,35 +533,12 @@ class MyPINN3D_t(MyPINN_t):
         x = 0.5*self.pred_arctanhveff(xj)+0.5*self.pred_arctanhveff(xjr)
         x = torch.tanh(x)
         x = (x+1.)/2.*(self.vtotmax*1.1-self.vtotmin*0.9)+self.vtotmin*0.9
-#        x = (x+1.)/2.*(self.vtotmax-self.vtotmin)+self.vtotmin
         x = 1./x
-#        x = torch.tanh(x)
-#        x = (x+1.)/2.*(self.taumax-self.taumin)+self.taumin
         return x
 
-    def forward_pde_nohp(self, x, xs, v):
-        ndata = len(x)
-        tau = self.pred_t(x, xs)
-        t0 = ((x[:,0]-xs[:,0])**2+(x[:,1]-xs[:,1])**2+(x[:,2]-xs[:,2])**2)**0.5
-        T = tau[:,0]*t0
-        T_x = torch.autograd.grad(T.sum(), x, create_graph=True)[0]
-        p = (T_x[:,0]**2+T_x[:,1]**2+T_x[:,2]**2)**(-0.5)-v
-        p /= (len(v)**0.5)
-        return p
-
-    def forward_pde_nohp_nonormalization(self, x, xs, v):
-        ndata = len(x)
-        tau = self.pred_t(x, xs)
-        t0 = ((x[:,0]-xs[:,0])**2+(x[:,1]-xs[:,1])**2+(x[:,2]-xs[:,2])**2)**0.5
-        T = tau[:,0]*t0
-        T_x = torch.autograd.grad(T.sum(), x, create_graph=True)[0]
-        p = (T_x[:,0]**2+T_x[:,1]**2+T_x[:,2]**2)**(-0.5)-v
-        return p
-
-            
+           
     def traveltime_pred_obs(self, x, xs):
         ndata = len(x)
-#        t0 = (((x[:, 0]-xs[:, 0])**2+(x[:, 1]-xs[:, 1])**2)**0.5)
         t0 = ((x[:,0]-xs[:,0])**2+(x[:,1]-xs[:,1])**2+(x[:,2]-xs[:,2])**2)**0.5
         tau = self.pred_t(x, xs)
         t = tau[:, 0]*t0
@@ -754,7 +564,7 @@ class MyPINN3D_t(MyPINN_t):
         tau = self.pred_t(x,xs_list)
         t0 = ((x[:,0]-xs[0])**2+(x[:,1]-xs[1])**2+(x[:,2]-xs[2])**2)**0.5
         t = tau[:, 0]*t0
-        t = (t).reshape(len(X), len(X[0, :])).detach()#.numpy().copy()
+        t = (t).reshape(len(X), len(X[0, :])).detach()
         return t
 
     def traveltime_pred_xygrid(self, X, Y, z, xs):
@@ -770,16 +580,9 @@ class MyPINN3D_t(MyPINN_t):
         tau = self.pred_t(x,xs_list)
         t0 = ((x[:,0]-xs[0])**2+(x[:,1]-xs[1])**2+(x[:,2]-xs[2])**2)**0.5
         t = tau[:, 0]*t0
-        t = (t).reshape(len(X), len(X[0, :])).detach()#.numpy().copy()
+        t = (t).reshape(len(X), len(X[0, :])).detach()
         return t
 
-    def loss_obs(self, x_obs, xs_obs, y_obs):
-        Tobs = self.traveltime_pred_obs(x_obs, xs_obs)
-        return self.loss_function(Tobs, y_obs)
-
-    def loglikelihood(self, theta, x_b, y_b, stdobs_b, oriT):
-        Tobs = self.traveltime_pred_obs(x_b, theta)
-        return -0.5*((Tobs-(y_b-oriT))/stdobs_b)@((Tobs-(y_b-oriT))/stdobs_b)
 
     def RMSE(self, theta, x_b, y_b, oriT):
         Tobs = self.traveltime_pred_obs(x_b, theta)

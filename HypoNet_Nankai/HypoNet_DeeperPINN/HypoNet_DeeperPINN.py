@@ -1,9 +1,7 @@
 import torch
 import HypoNet_Nankai.HypoNet_DeeperPINN.pymap3d_torch as pymap3d_torch
 import numpy as np
-import netCDF4
 import HypoNet_Nankai.HypoNet_DeeperPINN.geodetic as geodetic
-import HypoNet_Nankai.HypoNet_DeeperPINN.mypinn_FF_gpu_3D as mypinn
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
