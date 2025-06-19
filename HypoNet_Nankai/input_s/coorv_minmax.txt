@@ -1,0 +1,8 @@
+# This file contains coordinate and value ranges
+# Generated using Python
+# Format: xmin xmax, ymin ymax, zmin zmax, vmin vmax
+# Created by [Your Name or Script Name]
+-0.39950087666511536 899.2293090820312
+-0.20299819111824036 301.0
+-81.67603302001953 4.034144401550293
+0.20000000298023224 4.6219401359558105

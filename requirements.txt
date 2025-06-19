@@ -1,0 +1,14 @@
+# requirements.txt for Hyponet (CPU-only)
+# Python version
+python>=3.7
+
+# Core dependencies
+numpy
+scipy
+matplotlib
+netCDF4
+pymap3d
+
+# PyTorch (CPU only, version >2.0.0)
+torch>=2.0.0+cpu
+

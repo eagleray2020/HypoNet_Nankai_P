@@ -1,0 +1,18 @@
+#nhl nnt nnv
+20 512 swish 0.1
+# num of particles
+1
+# num pf MPI proc
+1
+# num of max iteration
+5 0.
+# learning rate
+Adagrad 1e-0
+# std of observation
+0.1
+# device id (0:cpu, 1:gpu)
+0
+# dtype
+single
+# src
+0 47

@@ -1,0 +1,14 @@
+nhl nnt nnv
+20 384 swish 0.1 0.0
+max_iter
+50
+learning rate
+3e-4 Yogi 0.9 20000
+batch size
+64000
+Device for adjoint calculation and PDE training (0:cpu, 1:gpu)
+1 nccl
+# MPI process
+2
+dtype
+single

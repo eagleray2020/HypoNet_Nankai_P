@@ -1,0 +1,1 @@
+/S/data01/G3506/p0791/NT-T2Net/PINN/train/MFF_DDP_surfsource_dividedPINN/dividedPINN_nx7_ny5_20_512_20_384/PINNST3D.py
