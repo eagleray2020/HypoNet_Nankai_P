@@ -1,0 +1,10 @@
+Event ID: 41
+IO type: numpy
+Initial hypocenter location: tensor([135.1698,  33.2252, -30.0000])
+Loss at Loop 0: 2.127493961506902
+Loss at Loop 1: 2.127493961506902
+Loss at Loop 2: 2.127493961506902
+Loss at Loop 3: 2.127493961506902
+Loss at Loop 4: 2.127493961506902
+L-BFGS for 42th source took 1.1686837673187256
+Event ID: 41 is succeeded
