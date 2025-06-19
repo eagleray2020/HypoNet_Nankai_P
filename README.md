@@ -263,6 +263,7 @@ HypoNet_Nankai/
 ├── input_p/          # P-wave specific input data
 ├── input_s/          # S-wave specific input data
 └── main.py           # Main execution script
+example/             # Example data and scripts for a numerical experiment presented in Agata+2025
 ```
 
 ## Author
