@@ -61,11 +61,6 @@ hyponetn_run [options]
 - `--outputdir`: Directory to save output files (required)
 - `--dry_run`: Run the script in dry run mode (the program will only check if the receiver coordinates are valid. Hypocenter will not be determined)
 
-
-
-
-
-
 #### Input & Output File Format
 
 The input files should be located in the specified `eventdir` with the naming format:
@@ -80,7 +75,7 @@ outputdir/result.XXXXXXXX.txt
 ```
 In both input and output file names, XXXXXXXX is the event index starting from 0 padded with zeros.
 
-We supports two types of input file formats:
+We supports two types of input file formats. The program will automatically detect the format.
 
 1. **Table style**
 
@@ -296,13 +291,16 @@ SOFTWARE.
 
 ## Citation policy
 
+
 If you use this code in your study, please cite the following paper in the acknowledgement section as below:
 
-"HypoNet Nankai, a hypocenter determination tool developed by Agata et al. (2025) that includes modified bathymetry and geoid data from GEBCO Bathymetric Compilation Group 2023 (2023) and the Earth Gravitational Model 2008 (Pavlis et al. 2012), respectively, was used."
+“We used HypoNet Nankai, a hypocenter determination tool developed by Agata et al. (2025), which is based on a 3D P-wave velocity model of the Nankai Trough region (Nakanishi et al., 2018). This model incorporates modified bathymetry and geoid data from the GEBCO Bathymetric Compilation Group (2023) and the Earth Gravitational Model 2008 (Pavlis et al., 2012), respectively."
 
 Reference:
 
 Agata, R., Baba, S., Nakanishi, A., Nakamura, Y.: HypoNet Nankai: A rapid hypocenter determination tool for the Nankai Trough subduction zone using physics-informed neural network. Seismological Research Letters, accepted.
+
+Nakanishi, A., Takahashi, N., Yamamoto, Y., Takahashi, T., Citak, S. O., Nakamura, T., Obana, K., Kodaira, S. Kaneda, Y.: Three-dimensional plate geometry and P-wave velocity models of the subduction zone in SW Japan: Implications for seismogenesis. Geology and Tectonics of Subduction Zones: A Tribute to Gaku Kimura 534, 69 (2018).
 
 GEBCO Bathymetric Compilation Group 2023: The GEBCO_2023 Grid - a continuous terrain model of the global oceans and land. NERC EDS British Oceanographic Data Centre NOC (2023). doi:10.5285/f98b053b-0cbc-6c23-e053-6c86abc0af7b
 
