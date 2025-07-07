@@ -58,8 +58,8 @@ dist_lonlat = np.linalg.norm(line_s-line_e)
 import argparse
 
 parser = argparse.ArgumentParser(description="Plot paper script")
-parser.add_argument('--x_s', type=int, default=None, help='Start index')
-parser.add_argument('--x_e', type=int, default=None, help='End index')
+parser.add_argument('--x_s', type=int, default=0, help='Start index')
+parser.add_argument('--x_e', type=int, default=47, help='End index')
 args_cli = parser.parse_args()
 
 x_s = args_cli.x_s

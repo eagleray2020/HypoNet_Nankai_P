@@ -15,26 +15,30 @@ This repository contains Python implementations for HypoNet Nankai ([Agata+2025]
 
 ### Prerequisites
 
-- Python >= 3.7
+- Python >= 3.8
 - pip (Python package installer)
 
 ### Installation Steps
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourname/hyponet_project.git
-cd hyponet_project
+git clone https://github.com/eagleray2020/HypoNet_Nankai_P.git
+cd HypoNet_Nankai_P
 ```
 
 2. Install the package:
 ```bash
-pip install -e .
+pip install .
+```
+If you prefer to install cpu-only Pytorch, you can use the following command:
+```bash
+pip install . --index-url https://download.pytorch.org/whl/cpu   --extra-index-url https://pypi.org/simple
 ```
 
 ### Dependencies
 
 The project requires the following main dependencies:
-- numpy
+- numpy < 2
 - torch >= 2.0.0 (CPU version is sufficient)
 - matplotlib
 - scipy

@@ -8,7 +8,7 @@ setup(
     author_email='agatar@jamstec.go.jp',
     packages=find_packages(),
     install_requires=[
-        'numpy',
+        'numpy<2',
         'torch>=2.0.0',
         'matplotlib',
         'scipy',
