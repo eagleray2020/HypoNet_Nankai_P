@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains Python implementations for HypoNet Nankai ([Agata+2025]([https://doi.org/10.48550/arXiv.2411.04667](https://pubs.geoscienceworld.org/ssa/srl/article-abstract/97/1/524/660247/HypoNet-Nankai-Rapid-Hypocenter-Determination-Tool?redirectedFrom=fulltext))), a rapid hypocenter determination tool for the Nankai Trough subduction zone using physics-informed neural network (PINN). 
+This repository contains Python implementations for HypoNet Nankai ([Agata+2025](https://pubs.geoscienceworld.org/ssa/srl/article-abstract/97/1/524/660247/HypoNet-Nankai-Rapid-Hypocenter-Determination-Tool?redirectedFrom=fulltext)), a rapid hypocenter determination tool for the Nankai Trough subduction zone using physics-informed neural network (PINN). 
 
 ## Features
 
